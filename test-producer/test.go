@@ -18,7 +18,7 @@ var password = "12982397StrongPassw0rd"
 
 func producer() {
 	c := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	producer := c.NewProducer("consumer_1", 100000)
+	producer := c.NewProducer("consumer_1")
 	now := time.Now()
 	for i := 0; i < 100000; i++ {
 		err := producer.Publish([]byte("message" + strconv.Itoa(i)))

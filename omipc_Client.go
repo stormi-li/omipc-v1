@@ -25,7 +25,7 @@ func (c *Client) NewConsumer(channel string, capacity, weight int) *Consumer {
 	}
 }
 
-func (c *Client) NewProducer(channel string, capacity int) *Producer {
+func (c *Client) NewProducer(channel string) *Producer {
 	producer := Producer{
 		configSearcher: c.configManager.NewSearcher(),
 		channel:        channel,
