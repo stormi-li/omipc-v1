@@ -29,9 +29,7 @@ func (c *Client) NewProducer(channel string, capacity int) *Producer {
 	producer := Producer{
 		configSearcher: c.configManager.NewSearcher(),
 		channel:        channel,
-		messageChan:    make(chan []byte, capacity),
 	}
-	go producer.sendMessage()
 	return &producer
 }
 func (c *Client) Listen(channel string, handler func(message string) bool) {

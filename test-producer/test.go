@@ -20,7 +20,7 @@ func producer() {
 	c := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
 	producer := c.NewProducer("consumer_1", 100000)
 	now := time.Now()
-	for i := 0; i < 100001; i++ {
+	for i := 0; i < 100000; i++ {
 		err := producer.Publish([]byte("message" + strconv.Itoa(i)))
 		if err != nil {
 			fmt.Println(err, i)
@@ -28,5 +28,4 @@ func producer() {
 		//  time.Sleep(10*time.Millisecond)
 	}
 	fmt.Println(time.Since(now))
-	select {}
 }
