@@ -12,7 +12,8 @@ var password = "12982397StrongPassw0rd"
 
 func main() {
 	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 10; i++ {
 		omipc.Notify("channel", strconv.Itoa(i))
 	}
+	omipc.Notify("channel", "close")
 }

@@ -12,8 +12,12 @@ var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
 func main() {
-	listen()
-	wait()
+	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
+	c := omipc.Listen("channel", func(message string) bool {
+		fmt.Println(message)
+		return message != "close"
+	})
+	<-c
 }
 
 func wait() {

@@ -2,7 +2,6 @@ package omipc
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -34,9 +33,10 @@ func (c *Client) NewProducer(channel string) *Producer {
 	}
 	return &producer
 }
-func (c *Client) Listen(channel string, handler func(message string) bool) {
+func (c *Client) Listen(channel string, handler func(message string) bool) chan struct{} {
 	sub := c.redisClient.Subscribe(c.ctx, channel)
 	msgChan := sub.Channel()
+	shutdown := make(chan struct{}, 1)
 	go func() {
 		defer sub.Close()
 		for {
@@ -44,8 +44,9 @@ func (c *Client) Listen(channel string, handler func(message string) bool) {
 				break
 			}
 		}
-		fmt.Println("close")
+		shutdown <- struct{}{}
 	}()
+	return shutdown
 }
 
 func (c *Client) Notify(channel, msg string) {
