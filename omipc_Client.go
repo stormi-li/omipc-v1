@@ -3,6 +3,7 @@ package omipc
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -29,6 +30,7 @@ func (c *Client) NewProducer(channel string) *Producer {
 	producer := Producer{
 		configSearcher: c.configManager.NewSearcher(),
 		channel:        channel,
+		rlock:          sync.RWMutex{},
 	}
 	return &producer
 }

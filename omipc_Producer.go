@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	manager "github.com/stormi-li/omi-v1/omi-manager"
@@ -13,6 +14,7 @@ type Producer struct {
 	configSearcher *manager.Searcher
 	channel        string
 	conn           net.Conn
+	rlock          sync.RWMutex
 }
 
 func (producer *Producer) connect() error {
@@ -23,10 +25,12 @@ func (producer *Producer) connect() error {
 	}
 	conn, err := net.Dial("tcp", address)
 	if err == nil {
+		producer.rlock.Lock()
 		if producer.conn != nil {
 			producer.conn.Close()
 		}
 		producer.conn = conn
+		producer.rlock.Unlock()
 		return nil
 	}
 	return err
@@ -44,10 +48,15 @@ func (producer *Producer) Publish(message []byte) error {
 	binary.BigEndian.PutUint32(lengthBuf, messageLength)
 
 	for {
+		producer.rlock.RLock()
 		if producer.conn != nil {
-			if _, err = producer.conn.Write(append(lengthBuf, byteMessage...)); err == nil {
-				break
-			}
+			_, err = producer.conn.Write(append(lengthBuf, byteMessage...))
+		} else {
+			err = fmt.Errorf("no message queue service was found")
+		}
+		producer.rlock.RUnlock()
+		if err == nil {
+			break
 		}
 		newErr := producer.connect()
 		if newErr != nil {

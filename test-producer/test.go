@@ -25,7 +25,7 @@ func producer() {
 		if err != nil {
 			fmt.Println(err, i)
 		}
-		//  time.Sleep(10*time.Millisecond)
+		time.Sleep(10*time.Millisecond)
 	}
 	fmt.Println(time.Since(now))
 }
