@@ -9,8 +9,12 @@ import (
 )
 
 type Client struct {
-	redisClient   *redis.Client
-	ctx           context.Context
+	redisClient *redis.Client
+	ctx         context.Context
+}
+
+func (c *Client) Close() {
+	c.redisClient.Close()
 }
 
 func (c *Client) Listen(channel string, handler func(message string) bool) chan struct{} {
@@ -20,7 +24,16 @@ func (c *Client) Listen(channel string, handler func(message string) bool) chan 
 	go func() {
 		defer sub.Close()
 		for {
-			if !handler(c.wait(msgChan, 0)) {
+			breakLoop := false
+			select {
+			case msg := <-msgChan:
+				if !handler(msg.Payload) {
+					breakLoop = true
+				}
+			case <-shutdown:
+				breakLoop = true
+			}
+			if breakLoop {
 				break
 			}
 		}

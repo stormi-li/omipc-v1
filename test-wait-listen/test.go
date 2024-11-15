@@ -13,10 +13,13 @@ var password = "12982397StrongPassw0rd"
 
 func main() {
 	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	c := omipc.Listen("channel", func(message string) bool {
+	key := "channel:channel:channel:channel:channel:channel"
+	c := omipc.Listen(key, func(message string) bool {
 		fmt.Println(message)
 		return message != "close"
 	})
+	omipc.Notify(key, "hello")
+	omipc.Notify(key, "close")
 	<-c
 }
 
