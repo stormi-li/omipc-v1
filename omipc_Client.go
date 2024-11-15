@@ -2,37 +2,17 @@ package omipc
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	manager "github.com/stormi-li/omi-v1/omi-manager"
 )
 
 type Client struct {
 	redisClient   *redis.Client
 	ctx           context.Context
-	configManager *manager.Client
 }
 
-func (c *Client) NewConsumer(channel string, capacity, weight int) *Consumer {
-	return &Consumer{
-		configManager: c.configManager,
-		channel:       channel,
-		weight:        weight,
-		messageChan:   make(chan []byte, capacity),
-	}
-}
-
-func (c *Client) NewProducer(channel string) *Producer {
-	producer := Producer{
-		configSearcher: c.configManager.NewSearcher(),
-		channel:        channel,
-		rlock:          sync.RWMutex{},
-	}
-	return &producer
-}
 func (c *Client) Listen(channel string, handler func(message string) bool) chan struct{} {
 	sub := c.redisClient.Subscribe(c.ctx, channel)
 	msgChan := sub.Channel()
