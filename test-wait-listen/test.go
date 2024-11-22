@@ -25,12 +25,17 @@ func wait() {
 
 func listen() {
 	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	c := omipc.Listen("channel", func(message string) bool {
+	listener := omipc.Listen("channel", func(message string) bool {
 		fmt.Println(message)
 		if message == "close" {
 			return false
 		}
 		return true
 	})
-	<-c
+	go func(){
+		time.Sleep(1*time.Second)
+		listener.Close()
+	}()
+	listener.Wait()
+	fmt.Println("closed")
 }
