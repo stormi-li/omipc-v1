@@ -16,4 +16,8 @@ func main() {
 		omipc.Notify("channel", strconv.Itoa(i))
 	}
 	omipc.Notify("channel", "close")
+	c:=redis.NewClient(&redis.Options{Addr: redisAddr, Password: password})
+	c.Close()
+	omipc.Close()
+	select{}
 }

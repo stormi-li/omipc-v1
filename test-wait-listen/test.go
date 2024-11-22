@@ -12,15 +12,7 @@ var redisAddr = "118.25.196.166:3934"
 var password = "12982397StrongPassw0rd"
 
 func main() {
-	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	key := "channel:channel:channel:channel:channel:channel"
-	c := omipc.Listen(key, func(message string) bool {
-		fmt.Println(message)
-		return message != "close"
-	})
-	omipc.Notify(key, "hello")
-	omipc.Notify(key, "close")
-	<-c
+	listen()
 }
 
 func wait() {
@@ -33,8 +25,12 @@ func wait() {
 
 func listen() {
 	omipc := omipc.NewClient(&redis.Options{Addr: redisAddr, Password: password})
-	omipc.Listen("channel", func(message string) bool {
+	c := omipc.Listen("channel", func(message string) bool {
 		fmt.Println(message)
+		if message == "close" {
+			return false
+		}
 		return true
 	})
+	<-c
 }

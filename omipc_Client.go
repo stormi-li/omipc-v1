@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 )
 
 type Client struct {
@@ -67,16 +66,5 @@ func (c *Client) wait(msgChan <-chan *redis.Message, timeout time.Duration) stri
 		return ""
 	case msg := <-msgChan:
 		return msg.Payload
-	}
-}
-
-func (c *Client) NewLock(lockName string) *Lock {
-	return &Lock{
-		uuid:        uuid.NewString(),
-		lockName:    lockName,
-		stop:        make(chan struct{}, 1),
-		omipcClient: c,
-		redisClient: c.redisClient,
-		ctx:         context.Background(),
 	}
 }
