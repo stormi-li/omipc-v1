@@ -16,10 +16,23 @@ func (c *Client) Close() {
 	c.redisClient.Close()
 }
 
-func (c *Client) Listen(channel string, handler func(message string) bool) chan struct{} {
+type Listener struct {
+	close chan struct{}
+	wait  chan struct{}
+}
+
+func (l *Listener) Close() {
+	l.close <- struct{}{}
+}
+func (l *Listener) Wait() {
+	<-l.wait
+}
+
+func (c *Client) Listen(channel string, handler func(message string) bool) *Listener {
 	sub := c.redisClient.Subscribe(c.ctx, channel)
 	msgChan := sub.Channel()
-	shutdown := make(chan struct{}, 1)
+	close := make(chan struct{}, 1)
+	wait := make(chan struct{}, 1)
 	go func() {
 		defer sub.Close()
 		for {
@@ -29,16 +42,19 @@ func (c *Client) Listen(channel string, handler func(message string) bool) chan 
 				if !handler(msg.Payload) {
 					breakLoop = true
 				}
-			case <-shutdown:
+			case <-close:
 				breakLoop = true
 			}
 			if breakLoop {
 				break
 			}
 		}
-		shutdown <- struct{}{}
+		wait <- struct{}{}
 	}()
-	return shutdown
+	return &Listener{
+		close: close,
+		wait:  wait,
+	}
 }
 
 func (c *Client) Notify(channel, msg string) {
